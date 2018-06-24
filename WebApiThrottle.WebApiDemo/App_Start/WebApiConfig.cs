@@ -57,7 +57,10 @@ namespace WebApiThrottle.WebApiDemo
                     EndpointRules = new Dictionary<string, RateLimits>
                     {
                         { "api/search", new RateLimits { PerSecond = 10, PerMinute = 100, PerHour = 1000 } }
-                    }
+                    },
+
+                    //Exceeded Request retry after 5 minutes
+                    SuspendTime = 300
                 },
                 policyRepository: new PolicyCacheRepository(),
                 repository: new CacheRepository(),
