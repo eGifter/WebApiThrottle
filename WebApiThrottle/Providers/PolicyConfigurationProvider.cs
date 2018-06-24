@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WebApiThrottle
 {
@@ -46,6 +42,8 @@ namespace WebApiThrottle
                     {
                         Entry = rule.Entry,
                         PolicyType = (ThrottlePolicyType)rule.PolicyType,
+                        SuspendTime = rule.SuspendTime,
+
                         LimitPerSecond = rule.LimitPerSecond,
                         LimitPerMinute = rule.LimitPerMinute,
                         LimitPerHour = rule.LimitPerHour,

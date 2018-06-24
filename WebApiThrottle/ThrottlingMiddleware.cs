@@ -171,7 +171,7 @@ namespace WebApiThrottle
                 timeSpan = core.GetTimeSpanFromPeriod(rateLimitPeriod);
 
                 // apply global rules
-                core.ApplyRules(identity, timeSpan, rateLimitPeriod, ref rateLimit);
+                core.ApplyRules(identity, timeSpan, rateLimitPeriod, ref rateLimit, ref suspendTime);
 
                 if (rateLimit > 0)
                 {

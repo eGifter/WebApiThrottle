@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Configuration;
 
 namespace WebApiThrottle
 {
@@ -74,6 +69,16 @@ namespace WebApiThrottle
             get
             {
                 return (int)this["policyType"];
+            }
+        }
+
+        [ConfigurationProperty("suspendTime", DefaultValue = "0", IsRequired = false)]
+        [LongValidator(ExcludeRange = false, MinValue = 0)]
+        public long SuspendTime
+        {
+            get
+            {
+                return (long)this["suspendTime"];
             }
         }
     }

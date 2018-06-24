@@ -280,7 +280,7 @@ namespace WebApiThrottle
             return timeSpan;
         }
 
-        internal void ApplyRules(RequestIdentity identity, TimeSpan timeSpan, RateLimitPeriod rateLimitPeriod, ref long rateLimit)
+        internal void ApplyRules(RequestIdentity identity, TimeSpan timeSpan, RateLimitPeriod rateLimitPeriod, ref long rateLimit, ref long suspend)
         {
             // apply endpoint rate limits
             if (Policy.EndpointRules != null)
@@ -289,11 +289,18 @@ namespace WebApiThrottle
                 if (rules.Any())
                 {
                     // get the lower limit from all applying rules
+
                     var customRate = (from r in rules let rateValue = r.Value.GetLimit(rateLimitPeriod) select rateValue).Min();
+                    var customSuspend = (from r in rules let suspendTime = r.Value.SuspendTime select suspendTime).Max();
 
                     if (customRate > 0)
                     {
                         rateLimit = customRate;
+                    }
+
+                    if(customSuspend > 0)
+                    {
+                        suspend = customSuspend;
                     }
                 }
             }
@@ -306,6 +313,12 @@ namespace WebApiThrottle
                 {
                     rateLimit = limit;
                 }
+
+                var customSuspend = Policy.ClientRules[identity.ClientKey].SuspendTime;
+                if (customSuspend > 0)
+                {
+                    suspend = customSuspend;
+                }
             }
 
             // enforce ip rate limit as is most specific 
@@ -316,6 +329,12 @@ namespace WebApiThrottle
                 if (limit > 0)
                 {
                     rateLimit = limit;
+                }
+
+                var customSuspend = Policy.IpRules[ipRule].SuspendTime;
+                if (customSuspend > 0)
+                {
+                    suspend = customSuspend;
                 }
             }
         }

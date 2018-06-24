@@ -178,8 +178,13 @@ namespace WebApiThrottle
                             rateLimit = attrLimit;
                         }
 
+                        if(attrPolicy.SuspendTime > 0)
+                        {
+                            suspendTime = attrPolicy.SuspendTime;
+                        }
+
                         // apply global rules
-                        core.ApplyRules(identity, timeSpan, rateLimitPeriod, ref rateLimit);
+                        core.ApplyRules(identity, timeSpan, rateLimitPeriod, ref rateLimit, ref suspendTime);
 
                         if (rateLimit > 0)
                         {

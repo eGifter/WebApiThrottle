@@ -130,7 +130,8 @@ namespace WebApiThrottle
                     PerMinute = item.LimitPerMinute,
                     PerHour = item.LimitPerHour,
                     PerDay = item.LimitPerDay,
-                    PerWeek = item.LimitPerWeek
+                    PerWeek = item.LimitPerWeek,
+                    SuspendTime = item.SuspendTime,
                 };
 
                 switch (item.PolicyType)

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WebApiThrottle
 {
@@ -18,6 +14,8 @@ namespace WebApiThrottle
         public long PerDay { get; set; }
 
         public long PerWeek { get; set; }
+
+        public long SuspendTime { get; set; }
 
         public long GetLimit(RateLimitPeriod period)
         {
