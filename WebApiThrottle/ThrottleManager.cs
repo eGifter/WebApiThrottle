@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WebApiThrottle
+﻿namespace WebApiThrottle
 {
     /// <summary>
     /// Allows changing the cache keys prefix and suffix, exposes ways to refresh the policy object at runtime.

@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.ServiceModel.Channels;
-using System.Web;
 
 namespace WebApiThrottle.Net
 {
