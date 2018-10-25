@@ -56,8 +56,8 @@ namespace WebApiThrottle.Net
             // Get a list of public ip addresses in the X_FORWARDED_FOR variable
             var publicForwardingIps = xForwardedFor.Split(',').Where(ip => !IpAddressUtil.IsPrivateIpAddress(ip)).ToList();
 
-            // If we found any, return the last one, otherwise return the user host address
-            return publicForwardingIps.Count > 0 ? publicForwardingIps.Last() : ipAddress;
+            // If we found any, return the first one, otherwise return the user host address
+            return publicForwardingIps.Count > 0 ? publicForwardingIps.First() : ipAddress;
         }
     }
 }
