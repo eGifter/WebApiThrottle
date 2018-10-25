@@ -10,7 +10,7 @@ namespace WebApiThrottle.Net
         public static bool ContainsIp(List<string> ipRules, string clientIp)
         {
             var ip = ParseIp(clientIp);
-            if (ipRules != null && ipRules.Any())
+            if (ipRules?.Any() == true)
             {
                 foreach (var rule in ipRules)
                 {
@@ -29,7 +29,7 @@ namespace WebApiThrottle.Net
         {
             rule = null;
             var ip = ParseIp(clientIp);
-            if (ipRules != null && ipRules.Any())
+            if (ipRules?.Any() == true)
             {
                 foreach (var r in ipRules)
                 {
@@ -57,7 +57,7 @@ namespace WebApiThrottle.Net
             {
                 ipAddress = ipAddress.Substring(0, portDelimiterPos);
             }
-            
+
             return IPAddress.Parse(ipAddress);
         }
 
@@ -77,8 +77,7 @@ namespace WebApiThrottle.Net
 
             if (isIpv6)
             {
-                bool isUniqueLocalAddress = octets[0] == 253;
-                return isUniqueLocalAddress;
+                return octets[0] == 253;
             }
             else
             {
@@ -91,8 +90,7 @@ namespace WebApiThrottle.Net
                 var is16BitBlock = octets[0] == 192 && octets[1] == 168;
                 if (is16BitBlock) return true; // Return to prevent further processing
 
-                var isLinkLocalAddress = octets[0] == 169 && octets[1] == 254;
-                return isLinkLocalAddress;
+                return octets[0] == 169 && octets[1] == 254;
             }
         }
     }

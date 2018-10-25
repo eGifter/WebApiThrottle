@@ -13,9 +13,7 @@ namespace WebApiThrottle
        
         public void Log(ThrottleLogEntry entry)
         {
-            if (null != traceWriter)
-            {
-                traceWriter.Info(
+            traceWriter?.Info(
                     entry.Request, 
                     "WebApiThrottle",
                     "{0} Request {1} from {2} has been throttled (blocked), quota {3}/{4} exceeded by {5}",
@@ -25,7 +23,6 @@ namespace WebApiThrottle
                     entry.RateLimit,
                     entry.RateLimitPeriod,
                     entry.TotalRequests);
-            }
         }
     }
 }

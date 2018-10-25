@@ -10,8 +10,6 @@ namespace WebApiThrottle
     public class ThrottlingMiddleware : OwinMiddleware
     {
         private ThrottlingCore core;
-        private IPolicyRepository policyRepository;
-        private ThrottlePolicy policy;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ThrottlingMiddleware"/> class. 
@@ -46,16 +44,18 @@ namespace WebApiThrottle
         /// <param name="ipAddressParser">
         /// The IpAddressParser
         /// </param>
-        public ThrottlingMiddleware(OwinMiddleware next, 
-            ThrottlePolicy policy, 
-            IPolicyRepository policyRepository, 
-            IThrottleRepository repository, 
+        public ThrottlingMiddleware(OwinMiddleware next,
+            ThrottlePolicy policy,
+            IPolicyRepository policyRepository,
+            IThrottleRepository repository,
             IThrottleLogger logger,
             IIpAddressParser ipAddressParser)
             : base(next)
         {
-            core = new ThrottlingCore();
-            core.Repository = repository;
+            core = new ThrottlingCore
+            {
+                Repository = repository
+            };
             Repository = repository;
             Logger = logger;
 
@@ -66,32 +66,21 @@ namespace WebApiThrottle
 
             QuotaExceededResponseCode = (HttpStatusCode)429;
 
-            this.policy = policy;
-            this.policyRepository = policyRepository;
+            this.Policy = policy;
+            this.PolicyRepository = policyRepository;
 
-            if (policyRepository != null)
-            {
-                policyRepository.Save(ThrottleManager.GetPolicyKey(), policy);
-            }
+            policyRepository?.Save(ThrottleManager.GetPolicyKey(), policy);
         }
 
         /// <summary>
         ///  Gets or sets the throttling rate limits policy repository
         /// </summary>
-        public IPolicyRepository PolicyRepository
-        {
-            get { return policyRepository; }
-            set { policyRepository = value; }
-        }
+        public IPolicyRepository PolicyRepository { get; set; }
 
         /// <summary>
         /// Gets or sets the throttling rate limits policy
         /// </summary>
-        public ThrottlePolicy Policy
-        {
-            get { return policy; }
-            set { policy = value; }
-        }
+        public ThrottlePolicy Policy { get; set; }
 
         /// <summary>
         /// Gets or sets the throttle metrics storage
@@ -123,19 +112,19 @@ namespace WebApiThrottle
             var request = context.Request;
 
             // get policy from repo
-            if (policyRepository != null)
+            if (PolicyRepository != null)
             {
-                policy = policyRepository.FirstOrDefault(ThrottleManager.GetPolicyKey());
+                Policy = PolicyRepository.FirstOrDefault(ThrottleManager.GetPolicyKey());
             }
 
-            if (policy == null || (!policy.IpThrottling && !policy.ClientThrottling && !policy.EndpointThrottling))
+            if (Policy == null || (!Policy.IpThrottling && !Policy.ClientThrottling && !Policy.EndpointThrottling))
             {
                 await Next.Invoke(context);
                 return;
             }
 
             core.Repository = Repository;
-            core.Policy = policy;
+            core.Policy = Policy;
 
             var identity = SetIdentity(request);
 
@@ -158,7 +147,7 @@ namespace WebApiThrottle
             }
 
             // apply policy
-            var suspendTime = policy.SuspendTime;
+            var suspendTime = Policy.SuspendTime;
 
             foreach (var rate in defRates)
             {
@@ -177,7 +166,9 @@ namespace WebApiThrottle
                     var throttleCounter = core.ProcessRequest(timeSpan, rateLimitPeriod, rateLimit, suspendTime, requestId);
 
                     if (throttleCounter.TotalRequests >= rateLimit && suspendTime > 0)
+                    {
                         timeSpan = core.GetSuspendSpanFromPeriod(rateLimitPeriod, timeSpan, suspendTime);
+                    }
 
                     // check if key expired
                     if (throttleCounter.Timestamp + timeSpan < DateTime.UtcNow)
@@ -189,10 +180,7 @@ namespace WebApiThrottle
                     if (throttleCounter.TotalRequests > rateLimit)
                     {
                         // log blocked request
-                        if (Logger != null)
-                        {
-                            Logger.Log(core.ComputeLogEntry(requestId, identity, throttleCounter, rateLimitPeriod.ToString(), rateLimit, null));
-                        }
+                        Logger?.Log(core.ComputeLogEntry(requestId, identity, throttleCounter, rateLimitPeriod.ToString(), rateLimit, null));
 
                         var message = !string.IsNullOrEmpty(this.QuotaExceededMessage)
                             ? this.QuotaExceededMessage
@@ -218,14 +206,14 @@ namespace WebApiThrottle
 
         protected virtual RequestIdentity SetIdentity(IOwinRequest request)
         {
-            var entry = new RequestIdentity();
-            entry.ClientIp = request.RemoteIpAddress;
-            entry.Endpoint = request.Uri.AbsolutePath.ToLowerInvariant();
-            entry.ClientKey = request.Headers.Keys.Contains("Authorization-Token")
-                ? request.Headers.GetValues("Authorization-Token").First()
-                : "anon";
-
-            return entry;
+            return new RequestIdentity
+            {
+                ClientIp = request.RemoteIpAddress,
+                Endpoint = request.Uri.AbsolutePath.ToLowerInvariant(),
+                ClientKey = request.Headers.Keys.Contains("Authorization-Token")
+                                ? request.Headers.GetValues("Authorization-Token").First()
+                                : "anon"
+            };
         }
 
         protected virtual string ComputeThrottleKey(RequestIdentity requestIdentity, RateLimitPeriod period)

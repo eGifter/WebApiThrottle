@@ -33,10 +33,9 @@ namespace WebApiThrottle.Net
             }
 
             // get the X-Forward-For headers (should only really be one)
-            IEnumerable<string> xForwardForList;
-            if (!request.Headers.TryGetValues("X-Forwarded-For", out xForwardForList))
+            if (!request.Headers.TryGetValues("X-Forwarded-For", out IEnumerable<string> xForwardForList))
             {
-               return ipAddress;
+                return ipAddress;
             }
 
             var xForwardedFor = xForwardForList.FirstOrDefault();
@@ -51,9 +50,7 @@ namespace WebApiThrottle.Net
             var publicForwardingIps = xForwardedFor.Split(',').Where(ip => !IpAddressUtil.IsPrivateIpAddress(ip)).ToList();
 
             // If we found any, return the last one, otherwise return the user host address
-            return publicForwardingIps.Any() ? publicForwardingIps.Last() : ipAddress;
-
+            return publicForwardingIps.Count > 0 ? publicForwardingIps.Last() : ipAddress;
         }
-
     }
 }

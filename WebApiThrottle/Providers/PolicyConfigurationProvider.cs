@@ -14,7 +14,7 @@ namespace WebApiThrottle
 
         public ThrottlePolicySettings ReadSettings()
         {
-            var settings = new ThrottlePolicySettings()
+            return new ThrottlePolicySettings()
             {
                 IpThrottling = policyConfig.IpThrottling,
                 ClientThrottling = policyConfig.ClientThrottling,
@@ -27,8 +27,6 @@ namespace WebApiThrottle
                 LimitPerWeek = policyConfig.LimitPerWeek,
                 SuspendTime = policyConfig.SuspendTime
             };
-
-            return settings;
         }
 
         public IEnumerable<ThrottlePolicyRule> AllRules()

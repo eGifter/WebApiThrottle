@@ -20,7 +20,7 @@ namespace WebApiThrottle.Tests
 
             Assert.Equal(false, result);
         }
-        
+
         [Fact]
         public void IsPrivateIpAddress_PublicAddressIpv6_ReturnsFalse()
         {

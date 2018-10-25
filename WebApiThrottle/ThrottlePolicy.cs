@@ -40,17 +40,16 @@ namespace WebApiThrottle
                 Rates.Add(RateLimitPeriod.Minute, perMinute.Value);
             }
 
-
             if (perHour.HasValue)
             {
                 Rates.Add(RateLimitPeriod.Hour, perHour.Value);
             }
 
-
             if (perDay.HasValue)
             {
                 Rates.Add(RateLimitPeriod.Day, perDay.Value);
             }
+
             if (perWeek.HasValue)
             {
                 Rates.Add(RateLimitPeriod.Week, perWeek.Value);

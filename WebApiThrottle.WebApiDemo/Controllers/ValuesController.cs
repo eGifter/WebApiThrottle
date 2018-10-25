@@ -39,7 +39,6 @@ namespace WebApiThrottle.WebApiDemo.Controllers
 
             //apply policy updates
             ThrottleManager.UpdatePolicy(policy, policyRepository);
-
         }
     }
 }

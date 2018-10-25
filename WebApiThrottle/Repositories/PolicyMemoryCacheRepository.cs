@@ -19,15 +19,14 @@ namespace WebApiThrottle
             {
                 memCache.Add(
                     id,
-                    policy, 
+                    policy,
                     new CacheItemPolicy());
             }
         }
 
         public ThrottlePolicy FirstOrDefault(string id)
         {
-            var policy = (ThrottlePolicy)memCache[id];
-            return policy;
+            return (ThrottlePolicy)memCache[id];
         }
 
         public void Remove(string id)

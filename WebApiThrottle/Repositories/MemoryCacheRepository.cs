@@ -48,8 +48,7 @@ namespace WebApiThrottle
 
         public void Clear()
         {
-            var cacheKeys = memCache.Where(kvp => kvp.Value is ThrottleCounter).Select(kvp => kvp.Key).ToList();
-            foreach (string cacheKey in cacheKeys)
+            foreach (string cacheKey in memCache.Where(kvp => kvp.Value is ThrottleCounter).Select(kvp => kvp.Key).ToList())
             {
                 memCache.Remove(cacheKey);
             }

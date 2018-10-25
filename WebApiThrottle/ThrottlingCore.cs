@@ -288,7 +288,7 @@ namespace WebApiThrottle
             if (Policy.EndpointRules != null)
             {
                 var rules = Policy.EndpointRules.Where(x => identity.Endpoint.IndexOf(x.Key, 0, StringComparison.InvariantCultureIgnoreCase) != -1).ToList();
-                if (rules.Any())
+                if (rules.Count > 0)
                 {
                     // get the lower limit from all applying rules
 
@@ -308,7 +308,7 @@ namespace WebApiThrottle
             }
 
             // apply custom rate limit for clients that will override endpoint limits
-            if (Policy.ClientRules != null && Policy.ClientRules.Keys.Contains(identity.ClientKey))
+            if (Policy.ClientRules?.Keys.Contains(identity.ClientKey) == true)
             {
                 var limit = Policy.ClientRules[identity.ClientKey].GetLimit(rateLimitPeriod);
                 if (limit > 0)
@@ -324,8 +324,7 @@ namespace WebApiThrottle
             }
 
             // enforce ip rate limit as is most specific 
-            string ipRule = null;
-            if (Policy.IpRules != null && ContainsIp(Policy.IpRules.Keys.ToList(), identity.ClientIp, out ipRule))
+            if (Policy.IpRules != null && ContainsIp(Policy.IpRules.Keys.ToList(), identity.ClientIp, out string ipRule))
             {
                 var limit = Policy.IpRules[ipRule].GetLimit(rateLimitPeriod);
                 if (limit > 0)

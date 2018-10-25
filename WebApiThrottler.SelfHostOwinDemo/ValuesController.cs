@@ -31,5 +31,5 @@ namespace WebApiThrottler.SelfHostOwinDemo
         public void Delete(int id)
         {
         }
-    } 
+    }
 }

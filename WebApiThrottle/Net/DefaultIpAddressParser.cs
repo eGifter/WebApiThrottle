@@ -25,6 +25,5 @@ namespace WebApiThrottle.Net
         {
             return IpAddressUtil.ParseIp(ipAddress);
         }
-
     }
 }

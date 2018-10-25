@@ -5,27 +5,12 @@
     /// </summary>
     public static class ThrottleManager
     {
-        private static string applicationName = string.Empty;
-
         private static string throttleKey = "throttle";
-
-        private static string policyKey = "throttle_policy";
 
         /// <summary>
         /// Gets or sets the global prefix
         /// </summary>
-        public static string ApplicationName
-        {
-            get
-            {
-                return applicationName;
-            }
-
-            set
-            {
-                applicationName = value;
-            }
-        }
+        public static string ApplicationName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the key prefix for rate limits
@@ -46,18 +31,7 @@
         /// <summary>
         /// Gets or sets the policy key suffix
         /// </summary>
-        public static string PolicyKey
-        {
-            get
-            {
-                return policyKey;
-            }
-
-            set
-            {
-                policyKey = value;
-            }
-        }
+        public static string PolicyKey { get; set; } = "throttle_policy";
 
         /// <summary>
         /// Returns key prefix for rate limits

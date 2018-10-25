@@ -14,9 +14,8 @@ namespace WebApiThrottle.WebApiDemo.Net
 
             if (request.Headers.Contains(customHeaderName))
             {
-                IEnumerable<string> headerValues;
 
-                if (request.Headers.TryGetValues(customHeaderName, out headerValues))
+                if (request.Headers.TryGetValues(customHeaderName, out IEnumerable<string> headerValues))
                 {
                     if (headerValues.Any())
                     {

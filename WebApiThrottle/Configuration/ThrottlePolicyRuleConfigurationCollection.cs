@@ -4,7 +4,6 @@ namespace WebApiThrottle
 {
     public class ThrottlePolicyRuleConfigurationCollection : ConfigurationElementCollection
     {
-
         protected override ConfigurationElement CreateNewElement()
         {
             return new ThrottlePolicyRuleConfigurationElement();

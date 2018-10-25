@@ -1,6 +1,6 @@
 ﻿namespace WebApiThrottle
 {
-    public enum ThrottlePolicyType : int
+    public enum ThrottlePolicyType
     {
         IpThrottling = 1,
         ClientThrottling,

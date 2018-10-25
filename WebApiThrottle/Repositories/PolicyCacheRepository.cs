@@ -29,8 +29,7 @@ namespace WebApiThrottle
 
         public ThrottlePolicy FirstOrDefault(string id)
         {
-            var policy = (ThrottlePolicy)HttpContext.Current.Cache[id];
-            return policy;
+            return (ThrottlePolicy)HttpContext.Current.Cache[id];
         }
 
         public void Remove(string id)

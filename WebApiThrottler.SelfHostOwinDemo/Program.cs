@@ -21,7 +21,6 @@ namespace WebApiThrottler.SelfHostOwinDemo
                 Console.WriteLine(response);
                 Console.WriteLine(response.Content.ReadAsStringAsync().Result);
 
-
                 Console.ReadLine();
             }
         }

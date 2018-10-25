@@ -71,5 +71,5 @@ namespace WebApiThrottler.SelfHostOwinDemo
 
             appBuilder.UseWebApi(config);
         }
-    } 
+    }
 }

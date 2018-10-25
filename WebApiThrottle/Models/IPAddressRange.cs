@@ -149,6 +149,5 @@ namespace WebApiThrottle
             if (bitsLen > 0) maskBytes[bytesLen] = (byte)~Enumerable.Range(1, 8 - bitsLen).Select(n => 1 << n - 1).Aggregate((a, b) => a | b);
             return maskBytes;
         }
-
     }
 }

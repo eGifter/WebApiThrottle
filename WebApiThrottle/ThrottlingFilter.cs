@@ -15,10 +15,6 @@ namespace WebApiThrottle
     {
         private readonly ThrottlingCore core;
 
-        private IPolicyRepository policyRepository;
-
-        private ThrottlePolicy policy;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ThrottlingFilter"/> class.
         /// By default, the <see cref="QuotaExceededResponseCode"/> property 
@@ -51,14 +47,16 @@ namespace WebApiThrottle
         /// <param name="ipAddressParser">
         /// The ip address provider
         /// </param>
-        public ThrottlingFilter(ThrottlePolicy policy, 
-            IPolicyRepository policyRepository, 
-            IThrottleRepository repository, 
-            IThrottleLogger logger, 
+        public ThrottlingFilter(ThrottlePolicy policy,
+            IPolicyRepository policyRepository,
+            IThrottleRepository repository,
+            IThrottleLogger logger,
             IIpAddressParser ipAddressParser = null)
         {
-            core = new ThrottlingCore();
-            core.Repository = repository;
+            core = new ThrottlingCore
+            {
+                Repository = repository
+            };
             Repository = repository;
             Logger = logger;
             if (ipAddressParser != null)
@@ -68,32 +66,21 @@ namespace WebApiThrottle
 
             QuotaExceededResponseCode = (HttpStatusCode)429;
 
-            this.policy = policy;
-            this.policyRepository = policyRepository;
+            this.Policy = policy;
+            this.PolicyRepository = policyRepository;
 
-            if (policyRepository != null)
-            {
-                policyRepository.Save(ThrottleManager.GetPolicyKey(), policy);
-            }
+            policyRepository?.Save(ThrottleManager.GetPolicyKey(), policy);
         }
 
         /// <summary>
         ///  Gets or sets a repository used to access throttling rate limits policy.
         /// </summary>
-        public IPolicyRepository PolicyRepository
-        {
-            get { return policyRepository; }
-            set { policyRepository = value; }
-        }
+        public IPolicyRepository PolicyRepository { get; set; }
 
         /// <summary>
         /// Gets or sets the throttling rate limits policy
         /// </summary>
-        public ThrottlePolicy Policy
-        {
-            get { return policy; }
-            set { policy = value; }
-        }
+        public ThrottlePolicy Policy { get; set; }
 
         /// <summary>
         /// Gets or sets the throttle metrics storage
@@ -128,13 +115,12 @@ namespace WebApiThrottle
 
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
-            EnableThrottlingAttribute attrPolicy = null;
-            var applyThrottling = ApplyThrottling(actionContext, out attrPolicy);
+            var applyThrottling = ApplyThrottling(actionContext, out EnableThrottlingAttribute attrPolicy);
 
             // get policy from repo
-            if(policyRepository != null)
+            if (PolicyRepository != null)
             {
-                policy = policyRepository.FirstOrDefault(ThrottleManager.GetPolicyKey());
+                Policy = PolicyRepository.FirstOrDefault(ThrottleManager.GetPolicyKey());
             }
 
             if (Policy != null && applyThrottling)
@@ -159,7 +145,7 @@ namespace WebApiThrottle
                     }
 
                     // apply policy
-                    var suspendTime = policy.SuspendTime;
+                    var suspendTime = Policy.SuspendTime;
 
                     foreach (var rate in defRates)
                     {
@@ -186,7 +172,7 @@ namespace WebApiThrottle
                         if (rateLimit > 0)
                         {
                             // increment counter
-                            var requestId = ComputeThrottleKey(identity, rateLimitPeriod); 
+                            var requestId = ComputeThrottleKey(identity, rateLimitPeriod);
                             var throttleCounter = core.ProcessRequest(timeSpan, rateLimitPeriod, rateLimit, suspendTime, requestId);
 
                             if (throttleCounter.TotalRequests >= rateLimit && suspendTime > 0)
@@ -202,13 +188,10 @@ namespace WebApiThrottle
                             if (throttleCounter.TotalRequests > rateLimit)
                             {
                                 // log blocked request
-                                if (Logger != null)
-                                {
-                                    Logger.Log(core.ComputeLogEntry(requestId, identity, throttleCounter, rateLimitPeriod.ToString(), rateLimit, actionContext.Request));
-                                }
+                                Logger?.Log(core.ComputeLogEntry(requestId, identity, throttleCounter, rateLimitPeriod.ToString(), rateLimit, actionContext.Request));
 
-                                var message = !string.IsNullOrEmpty(this.QuotaExceededMessage) 
-                                    ? this.QuotaExceededMessage 
+                                var message = !string.IsNullOrEmpty(this.QuotaExceededMessage)
+                                    ? this.QuotaExceededMessage
                                     : "API calls quota exceeded! maximum admitted {0} per {1}.";
 
                                 var content = this.QuotaExceededContent != null
@@ -263,20 +246,20 @@ namespace WebApiThrottle
             var applyThrottling = false;
             attr = null;
 
-            if (filterContext.ActionDescriptor.ControllerDescriptor.GetCustomAttributes<EnableThrottlingAttribute>(true).Any())
+            if (filterContext.ActionDescriptor.ControllerDescriptor.GetCustomAttributes<EnableThrottlingAttribute>(true).Count > 0)
             {
                 attr = filterContext.ActionDescriptor.ControllerDescriptor.GetCustomAttributes<EnableThrottlingAttribute>(true).First();
                 applyThrottling = true;
             }
 
-            if (filterContext.ActionDescriptor.GetCustomAttributes<EnableThrottlingAttribute>(true).Any())
+            if (filterContext.ActionDescriptor.GetCustomAttributes<EnableThrottlingAttribute>(true).Count > 0)
             {
                 attr = filterContext.ActionDescriptor.GetCustomAttributes<EnableThrottlingAttribute>(true).First();
                 applyThrottling = true;
             }
 
             // explicit disabled
-            if (filterContext.ActionDescriptor.GetCustomAttributes<DisableThrottingAttribute>(true).Any())
+            if (filterContext.ActionDescriptor.GetCustomAttributes<DisableThrottingAttribute>(true).Count > 0)
             {
                 applyThrottling = false;
             }
