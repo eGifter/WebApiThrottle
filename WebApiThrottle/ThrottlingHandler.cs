@@ -218,7 +218,8 @@ namespace WebApiThrottle
                 Endpoint = request.RequestUri.AbsolutePath.ToLowerInvariant(),
                 ClientKey = request.Headers.Contains("Authorization-Token")
                                 ? request.Headers.GetValues("Authorization-Token").First()
-                                : "anon"
+                                : "anon",
+                Method = request.Method
             };
         }
 

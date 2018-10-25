@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using WebApiThrottle.Net;
 
@@ -212,7 +213,8 @@ namespace WebApiThrottle
                 Endpoint = request.Uri.AbsolutePath.ToLowerInvariant(),
                 ClientKey = request.Headers.Keys.Contains("Authorization-Token")
                                 ? request.Headers.GetValues("Authorization-Token").First()
-                                : "anon"
+                                : "anon",
+                Method = new HttpMethod(request.Method)
             };
         }
 
