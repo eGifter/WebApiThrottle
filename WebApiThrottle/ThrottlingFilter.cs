@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 using WebApiThrottle.Net;
@@ -235,12 +232,13 @@ namespace WebApiThrottle
 
         protected virtual RequestIdentity SetIdentity(HttpRequestMessage request)
         {
-            var entry = new RequestIdentity();
-            entry.ClientIp = core.GetClientIp(request).ToString();
-            entry.Endpoint = request.RequestUri.AbsolutePath.ToLowerInvariant();
-            entry.ClientKey = request.Headers.Contains("Authorization-Token") ? request.Headers.GetValues("Authorization-Token").First() : "anon";
-
-            return entry;
+            return new RequestIdentity
+            {
+                ClientIp = core.GetClientIp(request).ToString(),
+                Endpoint = request.RequestUri.AbsolutePath.ToLowerInvariant(),
+                ClientKey = request.Headers.Contains("Authorization-Token") ? request.Headers.GetValues("Authorization-Token").First() : "anon",
+                Method = request.Method
+            };
         }
 
         protected virtual string ComputeThrottleKey(RequestIdentity requestIdentity, RateLimitPeriod period)

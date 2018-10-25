@@ -68,7 +68,7 @@ namespace WebApiThrottle
                     retryAfter = (suspendTime > 1) ? (int)suspendTime : 1;
                     break;
                 case RateLimitPeriod.Minute:
-                    retryAfter = (suspendTime > 60) ? (int)suspendTime : (60 + (int) suspendTime);
+                    retryAfter = (suspendTime > 60) ? (int)suspendTime : (60 + (int)suspendTime);
                     break;
                 case RateLimitPeriod.Hour:
                     retryAfter = (60 * 60) + (int)suspendTime;
@@ -92,29 +92,30 @@ namespace WebApiThrottle
                 return true;
             }
 
-            if (Policy.IpThrottling)
+            if (Policy.MethodWhitelist?.Contains(requestIdentity.Method) == true)
             {
-                if (Policy.IpWhitelist != null && ContainsIp(Policy.IpWhitelist, requestIdentity.ClientIp))
-                {
-                    return true;
-                }
+                return true;
             }
 
-            if (Policy.ClientThrottling)
+            if (Policy.IpThrottling && Policy.IpWhitelist != null
+                && ContainsIp(Policy.IpWhitelist, requestIdentity.ClientIp)
+            )
             {
-                if (Policy.ClientWhitelist != null && Policy.ClientWhitelist.Contains(requestIdentity.ClientKey))
-                {
-                    return true;
-                }
+                return true;
             }
 
-            if (Policy.EndpointThrottling)
+            if (Policy.ClientThrottling
+                && Policy.ClientWhitelist?.Contains(requestIdentity.ClientKey) == true
+            )
             {
-                if (Policy.EndpointWhitelist != null
-                    && Policy.EndpointWhitelist.Any(x => requestIdentity.Endpoint.IndexOf(x, 0, StringComparison.InvariantCultureIgnoreCase) != -1))
-                {
-                    return true;
-                }
+                return true;
+            }
+
+            if (Policy.EndpointThrottling
+                && Policy.EndpointWhitelist?.Any(x => requestIdentity.Endpoint.IndexOf(x, 0, StringComparison.InvariantCultureIgnoreCase) != -1) == true
+            )
+            {
+                return true;
             }
 
             return false;
@@ -154,8 +155,7 @@ namespace WebApiThrottle
                 hashBytes = algorithm.ComputeHash(idBytes);
             }
 
-            var hex = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
-            return hex;
+            return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
         }
 
         internal List<KeyValuePair<RateLimitPeriod, long>> RatesWithDefaults(List<KeyValuePair<RateLimitPeriod, long>> defRates)
@@ -206,7 +206,9 @@ namespace WebApiThrottle
                 {
                     var timeStamp = entry.Value.Timestamp;
                     if (entry.Value.TotalRequests >= rateLimit && suspendTime > 0)
+                    {
                         timeSpan = GetSuspendSpanFromPeriod(period, timeSpan, suspendTime);
+                    }
 
                     // entry has not expired
                     if (entry.Value.Timestamp + timeSpan >= DateTime.UtcNow)
@@ -298,7 +300,7 @@ namespace WebApiThrottle
                         rateLimit = customRate;
                     }
 
-                    if(customSuspend > 0)
+                    if (customSuspend > 0)
                     {
                         suspend = customSuspend;
                     }

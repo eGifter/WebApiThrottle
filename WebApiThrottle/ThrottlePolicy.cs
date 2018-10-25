@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace WebApiThrottle
 {
@@ -17,6 +16,7 @@ namespace WebApiThrottle
             IpWhitelist = new List<string>();
             IpRules = new Dictionary<string, RateLimits>();
             ClientWhitelist = new List<string>();
+            MethodWhitelist = new List<HttpMethod>();
             ClientRules = new Dictionary<string, RateLimits>();
             EndpointWhitelist = new List<string>();
             EndpointRules = new Dictionary<string, RateLimits>();
@@ -73,6 +73,8 @@ namespace WebApiThrottle
 
         public List<string> ClientWhitelist { get; set; }
 
+        public List<HttpMethod> MethodWhitelist { get; set; }
+
         public IDictionary<string, RateLimits> ClientRules { get; set; }
 
         /// <summary>
@@ -104,23 +106,25 @@ namespace WebApiThrottle
 
             var policy = new ThrottlePolicy(
                 perSecond: settings.LimitPerSecond,
-               perMinute: settings.LimitPerMinute,
-               perHour: settings.LimitPerHour,
-               perDay: settings.LimitPerDay,
-               perWeek: settings.LimitPerWeek);
+                perMinute: settings.LimitPerMinute,
+                perHour: settings.LimitPerHour,
+                perDay: settings.LimitPerDay,
+                perWeek: settings.LimitPerWeek
+            )
+            {
+                IpThrottling = settings.IpThrottling,
+                ClientThrottling = settings.ClientThrottling,
+                EndpointThrottling = settings.EndpointThrottling,
+                StackBlockedRequests = settings.StackBlockedRequests,
+                SuspendTime = settings.SuspendTime,
 
-            policy.IpThrottling = settings.IpThrottling;
-            policy.ClientThrottling = settings.ClientThrottling;
-            policy.EndpointThrottling = settings.EndpointThrottling;
-            policy.StackBlockedRequests = settings.StackBlockedRequests;
-            policy.SuspendTime = settings.SuspendTime;
-
-            policy.IpRules = new Dictionary<string, RateLimits>();
-            policy.ClientRules = new Dictionary<string, RateLimits>();
-            policy.EndpointRules = new Dictionary<string, RateLimits>();
-            policy.EndpointWhitelist = new List<string>();
-            policy.IpWhitelist = new List<string>();
-            policy.ClientWhitelist = new List<string>();
+                IpRules = new Dictionary<string, RateLimits>(),
+                ClientRules = new Dictionary<string, RateLimits>(),
+                EndpointRules = new Dictionary<string, RateLimits>(),
+                EndpointWhitelist = new List<string>(),
+                IpWhitelist = new List<string>(),
+                ClientWhitelist = new List<string>()
+            };
 
             foreach (var item in rules)
             {
@@ -150,10 +154,28 @@ namespace WebApiThrottle
 
             if (whitelists != null)
             {
-                policy.IpWhitelist.AddRange(whitelists.Where(x => x.PolicyType == ThrottlePolicyType.IpThrottling).Select(x => x.Entry));
-                policy.ClientWhitelist.AddRange(whitelists.Where(x => x.PolicyType == ThrottlePolicyType.ClientThrottling).Select(x => x.Entry));
-                policy.EndpointWhitelist.AddRange(whitelists.Where(x => x.PolicyType == ThrottlePolicyType.EndpointThrottling).Select(x => x.Entry));
+                policy.IpWhitelist.AddRange(
+                    whitelists
+                    .Where(x => x.PolicyType == ThrottlePolicyType.IpThrottling)
+                    .Select(x => x.Entry)
+                );
+                policy.ClientWhitelist.AddRange(
+                    whitelists
+                    .Where(x => x.PolicyType == ThrottlePolicyType.ClientThrottling)
+                    .Select(x => x.Entry)
+                );
+                policy.MethodWhitelist.AddRange(
+                    whitelists
+                    .Where(x => x.PolicyType == ThrottlePolicyType.MethodThrottling)
+                    .Select(x => new HttpMethod(x.Entry))
+                );
+                policy.EndpointWhitelist.AddRange(
+                    whitelists
+                    .Where(x => x.PolicyType == ThrottlePolicyType.EndpointThrottling)
+                    .Select(x => x.Entry)
+                );
             }
+
             return policy;
         }
     }
