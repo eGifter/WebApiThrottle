@@ -15,8 +15,15 @@ namespace WebApiThrottle.Net
         /// <returns></returns>
         public static string GetClientIpAddress(this HttpRequestMessage request)
         {
+            // get the CF-Connecting-IP headers (should only really be one)
+            if (request.Headers.TryGetValues("CF-Connecting-IP", out IEnumerable<string> cfConnectionIps))
+            {
+                //Request going through Cloudflare, use the IP they send
+                return cfConnectionIps.First();
+            }
+
             // Always return all zeroes for any failure (my calling code expects it)
-            string ipAddress = "0.0.0.0";
+            var ipAddress = "0.0.0.0";
 
             if (request.Properties.ContainsKey("MS_HttpContext"))
             {
